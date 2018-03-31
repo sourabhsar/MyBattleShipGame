@@ -8,6 +8,7 @@ import java.util.Random;
 public class Board {
 
     private int[][] board;
+    private Ship ship;
     //int[][] ships = new int[3][2];
 
 
@@ -15,8 +16,13 @@ public class Board {
         return board;
     }
 
-    public Board(int[][] board) {
+    public Ship getShip() {
+        return ship;
+    }
+
+    public Board(int[][] board, Ship ship) {
         this.board = board;
+        this.ship = ship;
     }
 
     public void initBoard(){
@@ -45,21 +51,22 @@ public class Board {
         }
 
     }
-    public void initShips(int[][] ships){
+    public void initShips(){
+        int[][] ships = ship.getShipLocation();
         Random random = new Random();
 
-        for(int ship=0 ; ship < 3 ; ship++){
-            ships[ship][0]=random.nextInt(5);
-            ships[ship][1]=random.nextInt(5);
+        for(int i=0 ; i < 3 ; i++){
+            ships[i][0]=random.nextInt(5);
+            ships[i][1]=random.nextInt(5);
 
             //let's check if that shot was already tried
             //if it was, just finish the do...while when a new pair was randomly selected
-            for(int last=0 ; last < ship ; last++){
-                if( (ships[ship][0] == ships[last][0])&&(ships[ship][1] == ships[last][1]) )
+            for(int last=0 ; last < i ; last++){
+                if( (ships[i][0] == ships[last][0])&&(ships[i][1] == ships[last][1]) )
                     do{
-                        ships[ship][0]=random.nextInt(5);
-                        ships[ship][1]=random.nextInt(5);
-                    }while( (ships[ship][0] == ships[last][0])&&(ships[ship][1] == ships[last][1]) );
+                        ships[i][0]=random.nextInt(5);
+                        ships[i][1]=random.nextInt(5);
+                    }while( (ships[i][0] == ships[last][0])&&(ships[i][1] == ships[last][1]) );
             }
 
         }

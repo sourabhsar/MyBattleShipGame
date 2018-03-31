@@ -2,6 +2,7 @@ package com.sapient.game.service;
 
 import com.sapient.game.dao.IBattleshipGameDao;
 import com.sapient.game.model.Board;
+import com.sapient.game.model.Shot;
 
 import javax.inject.Inject;
 
@@ -20,5 +21,10 @@ public class BattleshipGameServiceImpl implements IBattleshipGameService {
     @Override
     public Board showStatus() {
         return battleshipGameDao.showStatus();
+    }
+
+    @Override
+    public void shoot(Shot shot) {
+        battleshipGameDao.shoot(shot);
     }
 }
