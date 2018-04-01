@@ -2,6 +2,7 @@ package com.sapient.game.config;
 
 import com.sapient.game.dao.BattleshipGameDaoImpl;
 import com.sapient.game.dao.IBattleshipGameDao;
+import com.sapient.game.memory.Session;
 import com.sapient.game.model.Board;
 import com.sapient.game.model.Ship;
 import org.springframework.context.annotation.Bean;
@@ -21,10 +22,6 @@ public class BattleshipGameDaoConfig {
 
     @Bean
     public IBattleshipGameDao battleshipGameDao() {
-        Ship ship = new Ship(new int[3][2]);
-        Board board = new Board(new int[5][5],ship);
-        board.initBoard();
-        board.initShips();
-        return new BattleshipGameDaoImpl(board);
+        return new BattleshipGameDaoImpl(Session.getInstance());
     }
 }

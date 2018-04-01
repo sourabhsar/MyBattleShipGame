@@ -1,7 +1,9 @@
 package com.sapient.game.service;
 
 import com.sapient.game.dao.IBattleshipGameDao;
+import com.sapient.game.memory.GameSession;
 import com.sapient.game.model.Board;
+import com.sapient.game.model.Player;
 import com.sapient.game.model.Shot;
 
 import javax.inject.Inject;
@@ -19,12 +21,23 @@ public class BattleshipGameServiceImpl implements IBattleshipGameService {
     }
 
     @Override
-    public Board showStatus() {
-        return battleshipGameDao.showStatus();
+    public Board showStatus(long playerId) {
+        return battleshipGameDao.showStatus(playerId);
     }
 
     @Override
-    public void shoot(Shot shot) {
-        battleshipGameDao.shoot(shot);
+    public void shoot(long playerId, long gameSessionId,Shot shot) {
+        battleshipGameDao.shoot(playerId,gameSessionId,shot);
+    }
+
+    @Override
+    public GameSession joinGame(Player player) {
+
+        return battleshipGameDao.joinGame(player);
+    }
+
+    @Override
+    public GameSession resetGame(long gameSessionId) {
+        return battleshipGameDao.resetGame(gameSessionId);
     }
 }

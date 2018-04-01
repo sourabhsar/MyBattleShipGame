@@ -1,39 +1,142 @@
 package com.sapient.game.dao;
 
+import com.sapient.game.memory.GameSession;
+import com.sapient.game.memory.Session;
 import com.sapient.game.model.Board;
+import com.sapient.game.model.Player;
+import com.sapient.game.model.Ship;
 import com.sapient.game.model.Shot;
 
 import javax.inject.Inject;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.Set;
 
 /**
  * Created by Sourabh on 3/31/2018.
  */
 public class BattleshipGameDaoImpl implements IBattleshipGameDao {
 
-    private Board board;
-    private static int shotHit =0;
-    private static int attempt =0;
-    private static boolean end = false;
+    private Session session;
 
     @Inject
-    public BattleshipGameDaoImpl(Board board) {
-        this.board = board;
+    public BattleshipGameDaoImpl(Session session) {
+        this.session = session;
     }
 
     @Override
-    public Board showStatus() {
-        return board;
+    public Board showStatus(long playerId) {
+        Player player = session.getPlayerMap().get(playerId);
+        return player.getBoard();
     }
 
     @Override
-    public void shoot(Shot shot) {
-        ++attempt;
-        updateBoard(shot,board.getShip().getShipLocation(),board);
-        if(end) {
-            System.out.println("\n\n\nBattleship Java game finished! You hit 3 ships in "+attempt+" attempts");
-            System.out.println("Please restart the game");
-            return;
+    public void shoot(long playerId, long gameSessionId, Shot shot) {
+        GameSession gameSession = session.getGameSessionsIdMap().get(gameSessionId);
+        synchronized (gameSession) {
+            if(gameSession.getPlayer2() == null) {
+                throw new RuntimeException("waiting for 2nd player to join");
+            }
+            if (gameSession.isEnd()) {
+                throw new RuntimeException("This game is ended, please restart");
+            }
+            Player player = null;
+            if (gameSession.getPlayer1().getId() == playerId) {
+                player = gameSession.getPlayer1();
+            } else {
+                player = gameSession.getPlayer2();
+            }
+            synchronized (player) {
+                if (!player.isMyTurn()) {
+                    throw new RuntimeException("This is not your turn");
+                }
+
+                player.setAttempt(player.getAttempt() + 1);
+                player.setMyTurn(false);
+                Player opponent = player.getOpponent();
+                updateBoard(shot, opponent.getBoard().getShip().getShipLocation(), opponent.getBoard(),player,gameSession);
+                if (gameSession.isEnd()) {
+                    System.out.println("\n\n\nBattleship Java game finished! You hit 3 ships in " + player.getAttempt() + " attempts");
+                    System.out.println("Winner is : "+ gameSession.getWinner().getName());
+                    System.out.println("Please restart the game");
+                    return;
+                }
+                opponent.setMyTurn(true);
+            }
         }
+    }
+
+    /**
+     * It checks if there is any available game session, if there any available game session is there the player will be joined as second player
+     * otherwise the player will be joined as 1st player
+     * @param player : player who joins a game session i.e. new game session as 1st player or existing game session as 2nd player
+     * @return
+     */
+    @Override
+    public synchronized GameSession joinGame(Player player) {
+        GameSession gameSession = checkIfAnyGameSessionAvailable();
+            if (gameSession != null) {
+                player.setGameSessionId(gameSession.getGameSessionId());
+                player.setOpponent(gameSession.getPlayer1());
+                gameSession.setPlayer2(player);
+                gameSession.getPlayer1().setOpponent(player);
+            } else {
+                gameSession = new GameSession();
+                long gameSessionId = GameSession.geneRateGameSessionId();
+                gameSession.setGameSessionId(gameSessionId);
+                player.setGameSessionId(gameSessionId);
+                gameSession.setPlayer1(player);
+            }
+            setUpPlayerBoard(player);
+            session.addPLayers(player);
+            session.addGameSessions(gameSession);
+        return gameSession;
+    }
+
+    @Override
+    public GameSession resetGame(long gameSessionId) {
+        GameSession gameSession = session.getGameSessionsIdMap().get(gameSessionId);
+        resetGame(gameSession.getPlayer1());
+        resetGame(gameSession.getPlayer2());
+        return gameSession;
+    }
+
+    private static void resetGame(Player player) {
+        player.getBoard().initBoard();
+        player.getBoard().initShips();
+        player.setShotHit(0);
+        player.setAttempt(0);
+        player.setMyTurn(true);
+    }
+
+    private void setUpPlayerBoard(Player player) {
+        Ship ship = new Ship(new int[3][2]);
+        Board board = new Board(new int[5][5],ship);
+        board.initBoard();
+        board.initShips();
+        player.setBoard(board);
+    }
+
+    /*
+    Each game session holds only two players, if the second is null that means that game session is waiting for 2nd player to join,
+    so we return that game session otherwise, we return null game session
+     */
+    private GameSession checkIfAnyGameSessionAvailable() {
+        Set<Map.Entry<Long,GameSession>> entry;
+        Iterator<Map.Entry<Long,GameSession>> iterator;
+        GameSession gameSession = null;
+        if(session.getGameSessionsIdMap().size() != 0) {
+            entry = session.getGameSessionsIdMap().entrySet();
+            iterator = entry.iterator();
+
+            while (iterator.hasNext()) {
+                gameSession = iterator.next().getValue();
+                if(gameSession.getPlayer2() == null) {
+                    return gameSession;
+                }
+            }
+        }
+        return null;
     }
 
     private static boolean hit(Shot shot, int[][] ships){
@@ -47,11 +150,15 @@ public class BattleshipGameDaoImpl implements IBattleshipGameDao {
         return false;
     }
 
-    private static void updateBoard(Shot shot, int[][] ships, Board board){
+    private static void updateBoard(Shot shot, int[][] ships, Board board,Player player, GameSession gameSession){
         if(hit(shot,ships)) {
             board.getBoard()[shot.getRow() -1][shot.getColumn()-1] = 1;
-            if(++shotHit == 3) {
-                end = true;
+            int hit = player.getShotHit() +1;
+            player.setShotHit(hit);
+            System.out.println("player " + player.getName() + " hit : " + hit);
+            if(hit == 3) {
+                gameSession.setWinner(player);
+                gameSession.setEnd(true);
             }
         } else {
             board.getBoard()[shot.getRow()-1][shot.getColumn()-1] = 0;
