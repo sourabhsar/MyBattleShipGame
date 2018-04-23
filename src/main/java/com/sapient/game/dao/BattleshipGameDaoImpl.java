@@ -6,6 +6,7 @@ import com.sapient.game.model.Board;
 import com.sapient.game.model.Player;
 import com.sapient.game.model.Ship;
 import com.sapient.game.model.Shot;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.inject.Inject;
 import java.util.Iterator;
@@ -18,10 +19,12 @@ import java.util.Set;
 public class BattleshipGameDaoImpl implements IBattleshipGameDao {
 
     private Session session;
+    private DriverManagerDataSource dataSource;
 
     @Inject
-    public BattleshipGameDaoImpl(Session session) {
+    public BattleshipGameDaoImpl(Session session, DriverManagerDataSource dataSource) {
         this.session = session;
+        this.dataSource = dataSource;
     }
 
     @Override

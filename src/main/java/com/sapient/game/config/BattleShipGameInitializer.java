@@ -24,6 +24,7 @@ public class BattleShipGameInitializer implements WebApplicationInitializer {
         ServletRegistration.Dynamic servlet = servletContext.addServlet("dispatcher",dispatcherServlet);
         servlet.addMapping(API_WILDCARD);
         servlet.setLoadOnStartup(1);
-        ctx.register(BattleshipGameWebAPIConfig.class,BattleshipGameServicesConfig.class,BattleshipGameDaoConfig.class);
+        ctx.register(BattleshipGameWebAPIConfig.class,BattleshipGameServicesConfig.class,
+                BattleshipGameDaoConfig.class,BattleShipDBConfiguration.class);
     }
 }

@@ -8,6 +8,7 @@ import com.sapient.game.model.Ship;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
 import java.util.Random;
@@ -21,7 +22,7 @@ import java.util.Random;
 public class BattleshipGameDaoConfig {
 
     @Bean
-    public IBattleshipGameDao battleshipGameDao() {
-        return new BattleshipGameDaoImpl(Session.getInstance());
+    public IBattleshipGameDao battleshipGameDao(DriverManagerDataSource dataSource) {
+        return new BattleshipGameDaoImpl(Session.getInstance(),dataSource);
     }
 }
