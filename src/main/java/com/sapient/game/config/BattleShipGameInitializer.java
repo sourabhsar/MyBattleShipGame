@@ -1,5 +1,6 @@
 package com.sapient.game.config;
 
+import com.sapient.game.config.security.SecurityConfiguration;
 import org.springframework.web.WebApplicationInitializer;
 import org.springframework.web.context.support.AnnotationConfigWebApplicationContext;
 import org.springframework.web.servlet.DispatcherServlet;
@@ -25,6 +26,6 @@ public class BattleShipGameInitializer implements WebApplicationInitializer {
         servlet.addMapping(API_WILDCARD);
         servlet.setLoadOnStartup(1);
         ctx.register(BattleshipGameWebAPIConfig.class,BattleshipGameServicesConfig.class,
-                BattleshipGameDaoConfig.class,BattleShipDBConfiguration.class);
+                BattleshipGameDaoConfig.class,BattleShipDBConfiguration.class, SecurityConfiguration.class);
     }
 }

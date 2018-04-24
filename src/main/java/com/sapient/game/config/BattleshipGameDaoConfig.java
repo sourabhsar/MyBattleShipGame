@@ -11,6 +11,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.sql.DataSource;
 import java.util.Random;
 
 /**
@@ -22,7 +23,7 @@ import java.util.Random;
 public class BattleshipGameDaoConfig {
 
     @Bean
-    public IBattleshipGameDao battleshipGameDao(DriverManagerDataSource dataSource) {
+    public IBattleshipGameDao battleshipGameDao(DataSource dataSource) {
         return new BattleshipGameDaoImpl(Session.getInstance(),dataSource);
     }
 }

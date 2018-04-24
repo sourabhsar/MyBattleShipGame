@@ -7,6 +7,8 @@ import org.springframework.context.annotation.PropertySource;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 
+import javax.sql.DataSource;
+
 /**
  * Created by Sourabh on 4/21/2018.
  */
@@ -17,10 +19,10 @@ import org.springframework.web.servlet.config.annotation.EnableWebMvc;
 public class BattleShipDBConfiguration {
 
     @Bean
-    public DriverManagerDataSource dataSource(@Value("${battleship.dbconnection.driverclassname}") String driverClassName,
-                                              @Value("${battleship.dbconnection.dbHostName}") String url,
-                                              @Value("${battleship.dbconnection.username}") String username,
-                                              @Value("${battleship.dbconnection.password}") String password) {
+    public DataSource dataSource(@Value("${battleship.dbconnection.driverclassname}") String driverClassName,
+                                 @Value("${battleship.dbconnection.dbHostName}") String url,
+                                 @Value("${battleship.dbconnection.username}") String username,
+                                 @Value("${battleship.dbconnection.password}") String password) {
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(driverClassName);
         dataSource.setUrl(url);

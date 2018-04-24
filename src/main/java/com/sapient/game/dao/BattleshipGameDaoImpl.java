@@ -9,6 +9,7 @@ import com.sapient.game.model.Shot;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 
 import javax.inject.Inject;
+import javax.sql.DataSource;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
@@ -16,26 +17,21 @@ import java.util.Set;
 /**
  * Created by Sourabh on 3/31/2018.
  */
-public class BattleshipGameDaoImpl implements IBattleshipGameDao {
+public class BattleshipGameDaoImpl extends AbstractDao implements IBattleshipGameDao {
 
-    private Session session;
-    private DriverManagerDataSource dataSource;
-
-    @Inject
-    public BattleshipGameDaoImpl(Session session, DriverManagerDataSource dataSource) {
-        this.session = session;
-        this.dataSource = dataSource;
+    public BattleshipGameDaoImpl(Session session, DataSource dataSource) {
+        super(session, dataSource);
     }
 
     @Override
     public Board showStatus(long playerId) {
-        Player player = session.getPlayerMap().get(playerId);
+        Player player = getSession().getPlayerMap().get(playerId);
         return player.getBoard();
     }
 
     @Override
     public void shoot(long playerId, long gameSessionId, Shot shot) {
-        GameSession gameSession = session.getGameSessionsIdMap().get(gameSessionId);
+        GameSession gameSession = getSession().getGameSessionsIdMap().get(gameSessionId);
         synchronized (gameSession) {
             if(gameSession.getPlayer2() == null) {
                 throw new RuntimeException("waiting for 2nd player to join");
@@ -91,14 +87,14 @@ public class BattleshipGameDaoImpl implements IBattleshipGameDao {
                 gameSession.setPlayer1(player);
             }
             setUpPlayerBoard(player);
-            session.addPLayers(player);
-            session.addGameSessions(gameSession);
+            getSession().addPLayers(player);
+            getSession().addGameSessions(gameSession);
         return gameSession;
     }
 
     @Override
     public GameSession resetGame(long gameSessionId) {
-        GameSession gameSession = session.getGameSessionsIdMap().get(gameSessionId);
+        GameSession gameSession = getSession().getGameSessionsIdMap().get(gameSessionId);
         resetGame(gameSession.getPlayer1());
         resetGame(gameSession.getPlayer2());
         return gameSession;
@@ -128,8 +124,8 @@ public class BattleshipGameDaoImpl implements IBattleshipGameDao {
         Set<Map.Entry<Long,GameSession>> entry;
         Iterator<Map.Entry<Long,GameSession>> iterator;
         GameSession gameSession = null;
-        if(session.getGameSessionsIdMap().size() != 0) {
-            entry = session.getGameSessionsIdMap().entrySet();
+        if(getSession().getGameSessionsIdMap().size() != 0) {
+            entry = getSession().getGameSessionsIdMap().entrySet();
             iterator = entry.iterator();
 
             while (iterator.hasNext()) {
